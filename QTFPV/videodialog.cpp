@@ -13,20 +13,28 @@ videoDialog::~videoDialog()
     delete ui;
 }
 
-/*udpsrc -> rtph264depay -> ffdec_h264 -> ffmpegcolorspace -> autovideosink*/
+void videoDialog::onBusErrorMessage(const QGst::MessagePtr & msg)
+{
+    qCritical() << "Error from bus:" << msg.staticCast<QGst::ErrorMessage>()->error();
+}
+
+/*udpsrc -> rtph264depay -> avdec_h264 -> videoconvert -> autovideosink*/
 void videoDialog::on_pushButton_clicked()
 {
     m_pipeline = Pipeline::create("RaspFV");
-    ElementPtr rtpudpsrc, rtph264depay, ffdec_h264, ffmpegcolorspace, autovideosink;
+    ElementPtr rtpudpsrc, rtph264depay, avdec_h264, videoconvert, autovideosink;
 
+    //watch the bus
+    m_pipeline->bus()->addSignalWatch();
+    QGlib::connect(m_pipeline->bus(), "message::error", this, &videoDialog::onBusErrorMessage);
 
     rtpudpsrc = ElementFactory::make("udpsrc");
     if (!rtpudpsrc){
         qFatal("Failed to create udpsrc. Aborting...");
     }
 
-    rtpudpsrc->setProperty("port", "9000");
-    rtpudpsrc->setProperty("caps", Caps::fromString("application/x-rtp,"
+    rtpudpsrc->setProperty("port", 9000);
+    rtpudpsrc->setProperty("caps", QGst::Caps::fromString("application/x-rtp,"
                                                           "media=(string)video,"
                                                           "clock-rate=(int)90000,"
                                                           "encoding-name=(string)H264"));
@@ -39,26 +47,26 @@ void videoDialog::on_pushButton_clicked()
     m_pipeline->add(rtph264depay);
     rtpudpsrc->link(rtph264depay);
 
-    ffdec_h264 = ElementFactory::make("ffdec_h264");
-    if (!ffdec_h264){
-        qFatal("Failed to create ffdec_h264");
+    avdec_h264 = ElementFactory::make("avdec_h264");
+    if (!avdec_h264){
+        qFatal("Failed to create avdec_h264");
     }
-    m_pipeline->add(ffdec_h264);
-    rtph264depay->link(ffdec_h264);
+    m_pipeline->add(avdec_h264);
+    rtph264depay->link(avdec_h264);
 
-    ffmpegcolorspace = ElementFactory::make("ffmpegcolorspace");
-    if (!ffmpegcolorspace){
-        qFatal("Failed to create ffmpegcolorspace");
+    videoconvert = ElementFactory::make("videoconvert");
+    if (!videoconvert){
+        qFatal("Failed to create videoconvert");
     }
-    m_pipeline->add(ffmpegcolorspace);
-    ffdec_h264->link(ffmpegcolorspace);
+    m_pipeline->add(videoconvert);
+    avdec_h264->link(videoconvert);
 
     autovideosink = ElementFactory::make("autovideosink");
     if (!autovideosink){
         qFatal("Failed to create autovideosink");
     }
     m_pipeline->add(autovideosink);
-    ffmpegcolorspace->link(autovideosink);
+    videoconvert->link(autovideosink);
 
     //ui->videoWidget->watchPipeline(m_pipeline);
     m_pipeline->setState(QGst::StatePlaying);

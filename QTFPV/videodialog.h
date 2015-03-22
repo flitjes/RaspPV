@@ -15,7 +15,7 @@
 using namespace QGst;
 
 namespace Ui {
-class videoDialog;
+    class videoDialog;
 }
 
 class videoDialog : public QDialog
@@ -27,11 +27,12 @@ public:
     ~videoDialog();
     
 private Q_SLOTS:
-    void on_pushButton_clicked();
+    void on_pushButton_clicked();    
 
 private:
     Ui::videoDialog *ui;
     QGst::PipelinePtr m_pipeline;
+    void onBusErrorMessage(const QGst::MessagePtr & msg);
 };
 
 #endif // VIDEODIALOG_H
