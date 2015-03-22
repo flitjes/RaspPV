@@ -26,7 +26,7 @@
     <string>PushButton</string>
    </property>
   </widget>
-  <widget class="QWidget" name="videoWidget" native="true">
+  <widget class="QGst::Ui::VideoWidget" name="videoWidget" native="true">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -37,6 +37,14 @@
    </property>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QGst::Ui::VideoWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">QGst/Ui/VideoWidget</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

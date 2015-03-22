@@ -12,8 +12,6 @@
 #include <QGst/Message>
 #include <QGst/Structure>
 
-using namespace QGst;
-
 namespace Ui {
     class videoDialog;
 }

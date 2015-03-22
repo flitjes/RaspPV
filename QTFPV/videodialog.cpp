@@ -21,14 +21,14 @@ void videoDialog::onBusErrorMessage(const QGst::MessagePtr & msg)
 /*udpsrc -> rtph264depay -> avdec_h264 -> videoconvert -> autovideosink*/
 void videoDialog::on_pushButton_clicked()
 {
-    m_pipeline = Pipeline::create("RaspFV");
-    ElementPtr rtpudpsrc, rtph264depay, avdec_h264, videoconvert, autovideosink;
+    m_pipeline = QGst::Pipeline::create("RaspFV");
+    QGst::ElementPtr rtpudpsrc, rtph264depay, avdec_h264, videoconvert, autovideosink;
 
     //watch the bus
     m_pipeline->bus()->addSignalWatch();
     QGlib::connect(m_pipeline->bus(), "message::error", this, &videoDialog::onBusErrorMessage);
 
-    rtpudpsrc = ElementFactory::make("udpsrc");
+    rtpudpsrc = QGst::ElementFactory::make("udpsrc");
     if (!rtpudpsrc){
         qFatal("Failed to create udpsrc. Aborting...");
     }
@@ -40,35 +40,35 @@ void videoDialog::on_pushButton_clicked()
                                                           "encoding-name=(string)H264"));
     m_pipeline->add(rtpudpsrc);
 
-    rtph264depay = ElementFactory::make("rtph264depay");
+    rtph264depay = QGst::ElementFactory::make("rtph264depay");
     if (!rtph264depay){
         qFatal("Failed to create rtph264depay");
     }
     m_pipeline->add(rtph264depay);
     rtpudpsrc->link(rtph264depay);
 
-    avdec_h264 = ElementFactory::make("avdec_h264");
+    avdec_h264 = QGst::ElementFactory::make("avdec_h264");
     if (!avdec_h264){
         qFatal("Failed to create avdec_h264");
     }
     m_pipeline->add(avdec_h264);
     rtph264depay->link(avdec_h264);
 
-    videoconvert = ElementFactory::make("videoconvert");
+    videoconvert = QGst::ElementFactory::make("videoconvert");
     if (!videoconvert){
         qFatal("Failed to create videoconvert");
     }
     m_pipeline->add(videoconvert);
     avdec_h264->link(videoconvert);
 
-    autovideosink = ElementFactory::make("autovideosink");
+    autovideosink = QGst::ElementFactory::make("autovideosink");
     if (!autovideosink){
         qFatal("Failed to create autovideosink");
     }
     m_pipeline->add(autovideosink);
     videoconvert->link(autovideosink);
 
-    //ui->videoWidget->watchPipeline(m_pipeline);
+    ui->videoWidget->watchPipeline(m_pipeline);
     m_pipeline->setState(QGst::StatePlaying);
     printf("Started!\n");
 }
