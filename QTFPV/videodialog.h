@@ -29,8 +29,10 @@ private Q_SLOTS:
 
 private:
     Ui::videoDialog *ui;
-    QGst::PipelinePtr m_pipeline;
+    QGst::PipelinePtr m_pipeline_right;
+    QGst::PipelinePtr m_pipeline_left;
     void onBusErrorMessage(const QGst::MessagePtr & msg);
+    void create_udp_rtp_video_pipeline(QGst::PipelinePtr pipeline);
 };
 
 #endif // VIDEODIALOG_H
